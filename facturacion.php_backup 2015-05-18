@@ -1,0 +1,242 @@
+<?php
+
+function inicio(&$fecha_inicio,&$fecha_final,&$salasprecio,&$mes,&$anio)
+{
+	$fecha=$mes."/1/".$anio;
+	//echo "Mes: ".$mes." Año: ".$anio."<br>";
+	$fecha_inicio=strtotime($fecha);
+	if ($mes==12)
+	{
+		$mes=0;
+		$anio=$anio+1;
+	}
+	$fecha=($mes+1)."/1/".$anio;
+	//echo "Mes: ".($mes+1)." Año: ".$anio."<br>";
+	$fecha_final=strtotime($fecha);
+	$salasprecio=array(2912.15,3232.17,1536.08,1376.07,2560.14,1216.06,1152.06,2336.12,2560.14,2112.11);
+}
+
+
+function armar_totales($cc_nombre,$cc_precio)
+{
+	$len=count($cc_nombre);
+	for ($i=1;$i<=$len;$i++)
+	{
+		$cadena=$cadena." - CECO: ".$cc_nombre[$i]." $: ".$cc_precio[$i];
+	}	
+	return $cadena;
+}
+
+function ceco($titulo)
+{
+	for ($i=-30;$i<0;$i++)
+	{
+		$cadenasub=substr($titulo,$i,1);
+		if ($cadenasub=="*")
+		{
+			$cad=substr($titulo,$i,10);
+			if ($cad=="*Facturar:")
+			{
+				$ceco=substr($titulo,$i+10,15);
+				return $ceco;
+			}
+		}
+	}
+	$ceco="No_facturar";
+	return $ceco;
+}
+
+function buscar_ceco(&$cc,&$cc_nombre)
+{
+	$indice=0;
+	$len=count($cc_nombre);
+	if ($len==0)
+	{
+		$indice=1;
+	}
+	else
+	{
+		for ($i=0;$i<=$len;$i++)
+		{
+			if ($cc_nombre[$i]==$cc)
+			{
+				$indice=$i;
+			}
+		}
+		if ($indice==0)
+		{
+			$indice=$len+1;
+		}
+	}
+	$cc_nombre[$indice]=$cc;
+	return $indice;
+}
+
+function cant_horas($hini,$hfin)
+{
+	$minutosini=date("H",$hini)*60+date("i",$hini);
+	$minutosfin=date("H",$hfin)*60+date("i",$hfin);
+	$minutos=$minutosfin-$minutosini;
+	if ($minutos<=300)
+	{
+		$frac=0.33;
+	}
+	else if ($minutos<=600)
+	{
+		$frac=0.66;
+	}
+	else
+	{
+		$frac=1;
+	}
+	return $frac;
+
+}
+
+function importe($reg,$i,$salasprecio)
+{
+	$duracion=cant_horas($reg['start_time'],$reg['end_time']);
+	$sala=$salasprecio[$i-102];
+	$duracion=(float)$duracion;
+	$sala=(float)$sala;
+	$total=$duracion * $sala;
+	//Si quieren con decimal borrar la siguiente linea
+	$total=(int)$total;
+	//$cc_nombre[$ind_ceco]=$cc;
+	return $total;
+}
+
+
+require_once "defaultincludes.inc";
+
+$conexion=mysql_connect($db_host,$db_login,$db_password) or die("Problemas en la conexion");
+mysql_select_db($db_database,$conexion) or die("Problemas en la selección de la base de datos");
+
+//CSV
+$nombre_fichero = 'facturacion';
+
+$cc_precio=array();
+$cc_nombre=array();
+$cc_precio_global=array();
+$cc_nombre_global=array();
+
+$mes=$_REQUEST['month'];
+$anio=$_REQUEST['year'];
+$csv=$_REQUEST['csv'];
+
+if ($csv==0) {print_header(0, 0, 0, 0, "");}
+$salida_cvs .="Nombre,Tipo,Fecha,Sala,CECO,Precio\n";
+
+
+//Esto es importante para que nadie lo pueda ver si no es administrador
+$user = getUserName();
+$nivel=authGetUserLevel($user);
+
+if ($nivel<=2)
+{
+	echo '<span style="font-size:16px;"><br>No tiene permisos para ver esta pagina<br><br> </span>';
+	exit;
+}
+
+inicio($fecha_inicio,$fecha_final,$salasprecio,$mes,$anio);
+
+if ($csv==0)
+//Salas room_id van desde el 102 al 111 para los del CAI
+{
+echo '<span style="font-size:36px;margin:auto;display:table;">Sistema de Facturacion<br></span>';
+echo '<span style="font-size:24px;">Bs As - Nueva Sede<br></span>';
+}
+
+for($i=102;$i<=111;$i++)
+{
+	$total_sala=0;
+	if ($csv==0)
+	{
+	echo '<span style="font-size:24px;">Aula: '.($i-101).'</span>';
+	echo "<br>";
+	}
+	$registros=mysql_query("SELECT * FROM plan_entry WHERE start_time >='$fecha_inicio' AND start_time <='$fecha_final'",$conexion) or die("Problemas en el select:".mysql_error()); 
+	while ($reg=mysql_fetch_array($registros))
+	{
+		if ($reg['room_id'] == $i)
+		{
+			$cc=ceco($reg['description']);
+			
+
+			$linea=" Nombre: ".$reg['name']." - Unidad: ".$typel[$reg['type']]." - Fecha: ".date("d-m-Y",$reg['start_time'])." - Aula: ".($reg['room_id']-101)." ";
+			
+			if ($csv==0)
+			{
+				$id=$reg['id'];
+	        		echo "<a href=./view_entry.php?id=$id>Reserva:</a>";
+			}	
+			if ($cc=="No_facturar")
+			{
+				
+			if ($csv==0){
+			echo $linea;}
+			}
+			else
+			{
+				$ind_ceco=buscar_ceco($cc,$cc_nombre);
+				$total=importe($reg,$i,$salasprecio);
+				$cc_precio[$ind_ceco]=$cc_precio[$ind_ceco]+$total;
+				$total_sala=$total_sala+$total;
+				$total_global=$total_global+$total;
+				$ind_ceco=buscar_ceco($cc,$cc_nombre_global);
+				$cc_precio_global[$ind_ceco]=$cc_precio_global[$ind_ceco]+$total;
+				//sumar array global?
+				if ($csv==0){ echo '<font color="red">'.$linea." - CC: ".$cc." - $".$total.'</font>';}
+				if ($csv==1)
+				{
+					$salida_cvs .=$reg['name'].",".$typel[$reg['type']].",".date("d-m-Y",$reg['start_time']).",".($reg['room_id']-101).",".$cc.",".$total."\n";
+					//echo "<br>CVS: ".$salida_cvs;
+				}
+			}
+			if ($csv==0){echo "<br>";}
+		}
+	}
+	$cadena=armar_totales($cc_nombre,$cc_precio);
+	if ($csv==0){
+	echo "<div style='text-align:right'>".$cadena."- Total: $". $total_sala."</div>";
+	echo "<hr />";}	
+	unset($cc_nombre);
+	unset($cc_precio);
+}
+
+if ($csv==1)
+{
+	$salida_cvs .= "\n";
+	$salida_cvs .= "=SUMAR.SI(E2:EX-AXX-F2:FX)";
+	$salida_cvs .= "\n";
+	foreach ($cc_nombre_global as $value)
+	{
+		$salida_cvs .=$value."\n";
+		
+	}
+	header("Content-type: application/vnd.ms-excel");
+	header("Content-disposition: txt/csv" . date("Y-m-d") . ".csv");
+	header( "Content-disposition: filename=".$nombre_fichero.".csv");	
+	echo $salida_cvs;
+}
+else
+{
+$cadena=armar_totales($cc_nombre_global,$cc_precio_global);
+echo "Totales de todas las aulas";
+echo "<div style='text-align:right'>".$cadena."- Total: $". $total_global."</div>";
+unset($cc_nombre_global);
+unset($cc_precio_global);
+echo "<hr />";	
+echo "Precio de las Aulas por dia"."<br>";
+for ($i=0;$i<10;$i++)
+{
+	$cadena="Aula: ".($i+1)." $".$salasprecio[$i]." - ";
+	echo $cadena;
+}
+echo "<br>Las aulas se cobran por cantidad de horas. Hasta 5 horas, se cobra 1/3, hasta 10hs, 2/3 y mas de 10hs, el total";
+}
+
+
+mysql_close($conexion);
+
+?>

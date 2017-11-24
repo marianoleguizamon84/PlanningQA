@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Planning Aulas</title>
+</head>
+<body>
+<?php
+require_once "defaultincludes.inc";
+print_header(0, 0, 0, 0, "");
+echo "<br>";
+?>
+<form action="facturacion.php" method="get"> 
+<br> 
+Año: 
+<select name="year"> 
+<option value="2015">2015</option> 
+<option value="2016">2016</option> 
+</select> 
+Mes: 
+<select name="month"> 
+<option value="1">Enero</option> 
+<option value="2">Febrero</option> 
+<option value="3">Marzo</option> 
+<option value="4">Abril</option> 
+<option value="5">Mayo</option> 
+<option value="6">Junio</option> 
+<option value="7">Julio</option> 
+<option value="8">Agosto</option> 
+<option value="9">Septiembre</option> 
+<option value="10">Octubre</option> 
+<option value="11">Noviembre</option> 
+<option value="12">Diciembre</option> 
+</select> 
+Formato:
+<select name="csv"> 
+<option value="0">Web</option> 
+<option value="1">Excel</option> 
+</select> 
+
+<input type="submit" value="Facturar"> 
+</form>  
+
+</body>
+</html>
