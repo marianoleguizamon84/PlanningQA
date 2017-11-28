@@ -1403,7 +1403,8 @@ function draw_cell($cell, $query_strings, $cell_class)
         }
         // echo "  <a href=\"view_entry.php?id=$id&amp;". $query_strings['booking'] . "\" title=\"$long_descr\">$descr</a>\n";
         $test = stripos($long_descr, "streaming") === FALSE ? '' : ' <span class="ion-ios-videocam" style="font-size:18px"></span>';
-        echo "  <a href=\"view_entry.php?id=$id&amp;". $query_strings['booking'] . "\" title=\"$long_descr\">$descr $test</a>\n";
+        $test2 = stripos($long_descr, "bedelia") === FALSE ? '' : ' <span class="ion-ios-information" style="font-size:18px"></span>';
+        echo "  <a href=\"view_entry.php?id=$id&amp;". $query_strings['booking'] . "\" title=\"$long_descr\">$descr $test $test2</a>\n";
         echo "</div>\n";
       }
       echo "</td>\n";
