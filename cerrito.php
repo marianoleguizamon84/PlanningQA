@@ -3,6 +3,17 @@
 
 require_once "defaultincludes.inc";
 
+if ($_GET['anio'] AND $_GET['mes'] AND $_GET['dia']) {
+  $dia = $_GET['dia'];
+  $mes = $_GET['mes'];
+  $anio = $_GET['anio'];
+} else {
+  $dia = date("d");
+  $mes = date("m");
+  $anio = date("Y");
+}
+
+
 // $sql = "SELECT from_unixtime($tbl_entry.start_time), from_unixtime($tbl_entry.end_time), $tbl_entry.room_id, $tbl_room.room_name,
 //         $tbl_entry.name
 //         FROM $tbl_entry
@@ -13,7 +24,8 @@ $sql = "SELECT $tbl_entry.start_time, $tbl_entry.end_time, $tbl_entry.room_id, $
         $tbl_entry.name
         FROM $tbl_entry
         JOIN $tbl_room on room_id=$tbl_room.id
-        WHERE $tbl_entry.start_time >= unix_timestamp('2017-11-16 0:00') AND $tbl_entry.start_time <= unix_timestamp('2017-11-16 23:59') AND $tbl_room.area_id = 14
+        -- WHERE $tbl_entry.start_time >= unix_timestamp('2017-11-16 0:00') AND $tbl_entry.start_time <= unix_timestamp('2017-11-16 23:59') AND $tbl_room.area_id = 14
+        WHERE $tbl_entry.start_time >= unix_timestamp('$anio-$mes-$dia 0:00') AND $tbl_entry.start_time <= unix_timestamp('$anio-$mes-$dia 23:59') AND $tbl_room.area_id = 14
         ORDER BY name";
 
 
@@ -39,26 +51,36 @@ $conn = null;
     <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
     <script type="text/javascript">
     window.onload = function() {
-      var tabla = document.getElementsByTagName('tbody');
+      calculos();
+      cambioAltura(filaAltura);
+      cambio();
+      window.setInterval(cambio, 10000);
+    }
+
+    // window.onresize = function(event){
+    //   calculos();
+    //   cambioAltura(filaAltura);
+    //   cambio();
+    //   // window.setInterval(cambio, 10000);
+    // }
+
+    function calculos(){
       var largo = window.innerHeight;
       var filaTitulo = document.getElementsByTagName('thead')[0].offsetHeight;
-      var filaAltura = document.getElementsByTagName('tr')[1].offsetHeight;
+      filaAltura = medio();
       tanda = Math.floor((largo - filaTitulo) / filaAltura)
       cursos = (document.getElementsByTagName('tr')) ;
       var cursosCant = (document.getElementsByTagName('tr').length) - 1 ;
       pasadas = Math.ceil(cursosCant/tanda);
-      var arrCursos = [];
-      console.log("Titulo: " + filaTitulo);
-      console.log("cada Fila: " + filaAltura);
-      console.log("Largo Pagina: " + largo);
-      console.log("Entran: " + tanda);
-      console.log("Cursos: " + cursosCant);
-      console.log("Pasadas: " + pasadas);
       cont = 1;
-      console.log('Pasada '+ cont);
-      cambio();
-      window.setInterval(cambio, 10000);
-      // cambio();
+      // console.log("Titulo: " + filaTitulo);
+      // console.log("cada Fila: " + filaAltura);
+      // console.log("Largo Pagina: " + largo);
+      // console.log("Entran: " + tanda);
+      // console.log("Cursos: " + cursosCant);
+      // console.log("Pasadas: " + pasadas);
+      // console.log('Pasada '+ cont);
+      // console.log('Maxima altura de TD ' + filaAltura + 'px');
     }
 
     function cambio(){
@@ -66,15 +88,11 @@ $conn = null;
       var aparecer = [];
       for (var i = 1; i < cursos.length; i++) {
         if ((i >= tanda*cont - (tanda-1)) && (i <= tanda*cont)) {
-          console.log(i);
+          // console.log(i);
           aparecer.push(cursos[i]);
-          // cursos[i].style.display = '';
-          // var x = $(cursos[i]).show('slow');
         } else {
-          console.log(i + " X");
+          // console.log(i + " X");
           desaparecer.push(cursos[i]);
-          // cursos[i].style.display = 'none';
-          // var x = $(cursos[i]).hide('slow');
         }
       }
       for (var i = 0; i < desaparecer.length; i++) {
@@ -87,10 +105,47 @@ $conn = null;
       }, 1000);
 
       cont = cont + 1;
-      console.log("--> " + cont + " --> " + pasadas);
+      // console.log("--> " + cont + " --> " + pasadas);
       if (cont > pasadas) {
         cont = 1;
         }
+      }
+
+      function medio(){
+        var maxHeight = 0;
+        var fila = document.getElementsByTagName('td');
+        for (var i = 0; i < fila.length; i++) {
+          fila[i].style.verticalAlign = "middle";
+          if (fila[i].offsetHeight > maxHeight) {
+            maxHeight = fila[i].offsetHeight;
+          }
+        }
+        return maxHeight;
+      }
+
+      function cambioAltura(max){
+        // var fila = document.getElementsByTagName('td');
+
+        for (var i = 1; i < cursos.length; i++) {
+          // fila[i].style.height = max + "px";
+          cursos[i].style.height = max + "px";
+        }
+      }
+
+      function calendar(){
+        console.log(document.getElementsByTagName('input')[0].value);
+        var fecha = document.getElementsByTagName('input')[0].value;
+        var dia = fecha.substr(8,2);
+        var mes = fecha.substr(5,2);
+        var anio = fecha.substr(0,4);
+        console.log(dia+mes+anio);
+        window.location="./cerrito.php?anio="+anio+"&mes="+mes+"&dia="+dia;
+      }
+      function atras(){
+        console.log('atras');
+      }
+      function adelante(){
+        console.log('adelante');
       }
 
     </script>
@@ -107,6 +162,23 @@ $conn = null;
     th{
       font-size: 50px;
     }
+    .botonera{
+      display: flex;
+      align-content: space-between;
+    }
+    .flechas{
+      background-color: Transparent;
+      color: white;
+      border-radius: 5px;
+      width: 25%;
+      box-sizing: border-box;
+    }
+    input{
+      text-align: center;
+      width: 50%;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
     </style>
   </head>
   <body style="">
@@ -120,7 +192,6 @@ $conn = null;
       <tbody>
         <?php foreach ($result as $value) {
           echo "<tr>";
-          // echo "<td>" . date('H:i', $value['start_time']) . " a " . date('H:i', $value['end_time']) . "</td>";
           echo "<td>" . $value['name'] . "</td>";
           echo "<td>" . date('H:i', $value['start_time']) . "</td>";
           echo "<td>" . date('H:i', $value['end_time']) . "</td>";
@@ -129,6 +200,11 @@ $conn = null;
         } ?>
         </tbody>
     </table>
+    <div class="botonera">
+      <button type="button" name="button" class="flechas" onclick="atras()"><span class="glyphicon glyphicon-chevron-left"></span></button>
+      <input type="date" name="" value="<?php echo $anio."-".$mes."-".$dia ?>" onchange="calendar()">
+      <button type="button" name="button" class="flechas" onclick="adelante()"><span class="glyphicon glyphicon-chevron-right"></span></button>
+    </div>
 
   </body>
 </html>
