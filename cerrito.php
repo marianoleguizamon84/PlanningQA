@@ -26,7 +26,7 @@ $sql = "SELECT $tbl_entry.start_time, $tbl_entry.end_time, $tbl_entry.room_id, $
         JOIN $tbl_room on room_id=$tbl_room.id
         -- WHERE $tbl_entry.start_time >= unix_timestamp('2017-11-16 0:00') AND $tbl_entry.start_time <= unix_timestamp('2017-11-16 23:59') AND $tbl_room.area_id = 14
         WHERE $tbl_entry.start_time >= unix_timestamp('$anio-$mes-$dia 0:00') AND $tbl_entry.start_time <= unix_timestamp('$anio-$mes-$dia 23:59') AND $tbl_room.area_id = 14
-        ORDER BY name";
+        ORDER BY start_time, name";
 
 
 try {
@@ -57,13 +57,15 @@ $conn = null;
       cambioAltura(filaAltura);
       if ($(window).width() > 500) {
         cambio();
-        // window.setInterval(cambio, 10000);
         window.setInterval(cambio, 10000);
+        var x = $('input').outerHeight();
+        $('.table').css('margin-bottom', x + 'px');
       }
-      var titulo = $("#encabezado")
+      var alto = document.getElementsByTagName('tr')[0].offsetHeight;
+      var titulo = $("#encabezado");
       titulo.hide();
       $(window).scroll(function(){
-      if($(window).scrollTop() >= 100 ){
+      if($(window).scrollTop() >= alto ){
         titulo.show();
       } else {
         titulo.hide();
@@ -77,6 +79,7 @@ $conn = null;
     //   cambio();
     //   // window.setInterval(cambio, 10000);
     // }
+
     function encabezado(){
       var tablaTitulo = document.getElementsByClassName('tablaTitulo');
       var encabezadoTitulo = document.getElementsByClassName('encabezadoTitulo');
@@ -101,7 +104,7 @@ $conn = null;
       var desaparecer = [];
       var aparecer = [];
       cont++;
-      if (cont >= pasadas) {
+      if (cont > pasadas) {
         cont = 1;
       }
       for (var i = 1; i < cursos.length; i++) {
@@ -179,6 +182,7 @@ $conn = null;
     }
     .encabezado{
       /* display: none; */
+      width: 100%;
       position: fixed;
       top: 0;
       background-color: rgba(8,45,88,1);
@@ -196,12 +200,20 @@ $conn = null;
       box-sizing: border-box;
     }
     input{
+      -webkit-appearance: none;
+      box-sizing:         border-box;
       text-align: center;
-      /* width: 50%; */
+      text-align-last: center;
+      /* text-align: -webkit-center; */
       width: 100%;
       border-radius: 5px;
-      box-sizing: border-box;
       font-size: 25px;
+      background-color: rgba(8,45,88,1);
+      color: white;
+      /* width: 50%; */
+      /* -moz-box-sizing:    border-box; */
+      /* -webkit-box-sizing: border-box; */
+
     }
     @media (max-width: 500px) {
       body{
