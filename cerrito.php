@@ -57,9 +57,7 @@ $conn = null;
       cambioAltura(filaAltura);
       if ($(window).width() > 500) {
         cambio();
-        window.setInterval(cambio, 10000);
-        var x = $('input').outerHeight();
-        $('.table').css('margin-bottom', x + 'px');
+        intervalo = window.setInterval(cambio, 10000);
       }
       var alto = document.getElementsByTagName('tr')[0].offsetHeight;
       var titulo = $("#encabezado");
@@ -71,14 +69,39 @@ $conn = null;
         titulo.hide();
       }
       });
+      if ($(window).width() < 500) {
+        var x = $('input').outerHeight();
+        $('.table').css('margin-bottom', x + 'px');
+      }
     }
 
-    // window.onresize = function(event){
-    //   calculos();
-    //   cambioAltura(filaAltura);
-    //   cambio();
-    //   // window.setInterval(cambio, 10000);
-    // }
+    window.onresize = function(event){
+      $('tr').show();
+      if (typeof intervalo != 'undefined') {
+        clearInterval(intervalo);
+      }
+      encabezado();
+      calculos();
+      cambioAltura(filaAltura);
+      if ($(window).width() > 500) {
+        cambio();
+        intervalo = window.setInterval(cambio, 10000);
+      }
+      var alto = document.getElementsByTagName('tr')[0].offsetHeight;
+      var titulo = $("#encabezado");
+      titulo.hide();
+      $(window).scroll(function(){
+      if($(window).scrollTop() >= alto ){
+        titulo.show();
+      } else {
+        titulo.hide();
+      }
+      });
+      if ($(window).width() < 500) {
+        var x = $('input').outerHeight();
+        $('.table').css('margin-bottom', x + 'px');
+      }
+    }
 
     function encabezado(){
       var tablaTitulo = document.getElementsByClassName('tablaTitulo');
@@ -236,16 +259,16 @@ $conn = null;
     <table class="table">
       <thead>
         <th class="tablaTitulo">Curso</th>
-        <th class="tablaTitulo">Inicio</th>
-        <th class="tablaTitulo">Fin</th>
+        <th class="tablaTitulo">Horario</th>
+        <!-- <th class="tablaTitulo">Fin</th> -->
         <th class="tablaTitulo">Aula</th>
       </thead>
     <tbody>
         <?php foreach ($result as $value) {
           echo "<tr>";
           echo "<td>" . $value['name'] . "</td>";
-          echo "<td>" . date('H:i', $value['start_time']) . "</td>";
-          echo "<td>" . date('H:i', $value['end_time']) . "</td>";
+          echo "<td>" . date('H:i', $value['start_time']) . " a " .  date('H:i', $value['end_time']) . "</td>";
+          // echo "<td>" . date('H:i', $value['end_time']) . "</td>";
           echo "<td>" . $value['room_name'] . "</td>";
           echo "</tr>";
         } ?>
@@ -255,8 +278,8 @@ $conn = null;
       <table>
         <thead>
           <th class="encabezadoTitulo">Curso</th>
-          <th class="encabezadoTitulo">Inicio</th>
-          <th class="encabezadoTitulo">Fin</th>
+          <th class="encabezadoTitulo">Horario</th>
+          <!-- <th class="encabezadoTitulo">Fin</th> -->
           <th class="encabezadoTitulo">Aula</th>
         </thead>
       </table>
