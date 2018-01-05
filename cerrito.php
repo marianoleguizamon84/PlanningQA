@@ -13,18 +13,10 @@ if ($_GET['anio'] AND $_GET['mes'] AND $_GET['dia']) {
   $anio = date("Y");
 }
 
-
-// $sql = "SELECT from_unixtime($tbl_entry.start_time), from_unixtime($tbl_entry.end_time), $tbl_entry.room_id, $tbl_room.room_name,
-//         $tbl_entry.name
-//         FROM $tbl_entry
-//         JOIN $tbl_room on room_id=$tbl_room.id
-//         WHERE $tbl_entry.start_time >= unix_timestamp('2017-12-19 0:00') AND $tbl_entry.start_time <= unix_timestamp('2017-12-19 23:59') AND $tbl_room.area_id = 14";
-
 $sql = "SELECT $tbl_entry.start_time, $tbl_entry.end_time, $tbl_entry.room_id, $tbl_room.room_name,
         $tbl_entry.name
         FROM $tbl_entry
         JOIN $tbl_room on room_id=$tbl_room.id
-        -- WHERE $tbl_entry.start_time >= unix_timestamp('2017-11-16 0:00') AND $tbl_entry.start_time <= unix_timestamp('2017-11-16 23:59') AND $tbl_room.area_id = 14
         WHERE $tbl_entry.start_time >= unix_timestamp('$anio-$mes-$dia 0:00') AND $tbl_entry.start_time <= unix_timestamp('$anio-$mes-$dia 23:59') AND $tbl_room.area_id = 14
         ORDER BY start_time, name";
 
@@ -50,57 +42,23 @@ $conn = null;
     <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="https://d30y9cdsu7xlg0.cloudfront.net/png/123953-200.png">
     <script type="text/javascript">
     window.onload = function() {
       encabezado();
       calculos();
       cambioAltura(filaAltura);
-      if ($(window).width() > 500) {
-        cambio();
-        intervalo = window.setInterval(cambio, 10000);
-      }
-      var alto = document.getElementsByTagName('tr')[0].offsetHeight;
-      var titulo = $("#encabezado");
-      titulo.hide();
-      $(window).scroll(function(){
-      if($(window).scrollTop() >= alto ){
-        titulo.show();
-      } else {
-        titulo.hide();
-      }
-      });
-      if ($(window).width() < 500) {
-        var x = $('input').outerHeight();
-        $('.table').css('margin-bottom', x + 'px');
-      }
+      tituloFijo();
+      tamanoPantalla();
     }
 
     window.onresize = function(event){
-      $('tr').show();
-      if (typeof intervalo != 'undefined') {
-        clearInterval(intervalo);
-      }
+      resetear();
       encabezado();
       calculos();
       cambioAltura(filaAltura);
-      if ($(window).width() > 500) {
-        cambio();
-        intervalo = window.setInterval(cambio, 10000);
-      }
-      var alto = document.getElementsByTagName('tr')[0].offsetHeight;
-      var titulo = $("#encabezado");
-      titulo.hide();
-      $(window).scroll(function(){
-      if($(window).scrollTop() >= alto ){
-        titulo.show();
-      } else {
-        titulo.hide();
-      }
-      });
-      if ($(window).width() < 500) {
-        var x = $('input').outerHeight();
-        $('.table').css('margin-bottom', x + 'px');
-      }
+      tituloFijo();
+      tamanoPantalla();
     }
 
     function encabezado(){
@@ -118,7 +76,7 @@ $conn = null;
       filaAltura = medio();
       tanda = Math.floor((largo - filaTitulo) / filaAltura)
       cursos = (document.getElementsByTagName('tr')) ;
-      var cursosCant = (document.getElementsByTagName('tr').length) - 1 ;
+      var cursosCant = cursos.length - 2 ;
       pasadas = Math.ceil(cursosCant/tanda);
       cont = 0;
     }
@@ -147,8 +105,7 @@ $conn = null;
       }, 1000);
       }
 
-
-      function medio(){
+    function medio(){
         var maxHeight = 0;
         var fila = document.getElementsByTagName('td');
         for (var i = 0; i < fila.length; i++) {
@@ -160,27 +117,50 @@ $conn = null;
         return maxHeight;
       }
 
-      function cambioAltura(max){
+    function cambioAltura(max){
         for (var i = 1; i < cursos.length - 1; i++) {
           cursos[i].style.height = max + "px";
         }
       }
 
-      function calendar(){
-        console.log(document.getElementsByTagName('input')[0].value);
+    function calendar(){
         var fecha = document.getElementsByTagName('input')[0].value;
         var dia = fecha.substr(8,2);
         var mes = fecha.substr(5,2);
         var anio = fecha.substr(0,4);
-        console.log(dia+mes+anio);
         window.location="./cerrito.php?anio="+anio+"&mes="+mes+"&dia="+dia;
       }
-      function atras(){
-        console.log('atras');
+
+    function tituloFijo(){
+      var alto = document.getElementsByTagName('tr')[0].offsetHeight;
+      var titulo = $("#encabezado");
+      titulo.hide();
+      $(window).scroll(function(){
+      if($(window).scrollTop() >= alto ){
+        titulo.show();
+      } else {
+        titulo.hide();
       }
-      function adelante(){
-        console.log('adelante');
+      });
+    }
+
+    function tamanoPantalla(){
+      if ($(window).width() > 500) {
+        cambio();
+        intervalo = window.setInterval(cambio, 10000);
       }
+      if ($(window).width() < 500) {
+        var x = $('input').outerHeight();
+        $('.table').css('margin-bottom', x + 'px');
+      }
+    }
+
+    function resetear(){
+      $('tr').show();
+      if (typeof intervalo != 'undefined') {
+        clearInterval(intervalo);
+      }
+    }
 
     </script>
     <style media="screen">
