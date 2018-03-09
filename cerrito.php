@@ -3,10 +3,10 @@
 
 require_once "defaultincludes.inc";
 
-if ($_GET['anio'] AND $_GET['mes'] AND $_GET['dia']) {
-  $dia = $_GET['dia'];
-  $mes = $_GET['mes'];
-  $anio = $_GET['anio'];
+if ($_POST['fecha']) {
+  $dia = substr($_POST['fecha'], 8, 2);
+  $mes = substr($_POST['fecha'], 5, 2);
+  $anio = substr($_POST['fecha'], 0, 4);
 } else {
   $dia = date("d");
   $mes = date("m");
@@ -125,10 +125,7 @@ $conn = null;
 
     function calendar(){
         var fecha = document.getElementsByTagName('input')[0].value;
-        var dia = fecha.substr(8,2);
-        var mes = fecha.substr(5,2);
-        var anio = fecha.substr(0,4);
-        window.location="./cerrito.php?anio="+anio+"&mes="+mes+"&dia="+dia;
+        document.getElementById('fecha').submit();
       }
 
     function tituloFijo(){
@@ -204,7 +201,7 @@ $conn = null;
     }
     input{
       -webkit-appearance: none;
-      box-sizing:         border-box;
+      box-sizing: border-box;
       text-align: center;
       text-align-last: center;
       /* text-align: -webkit-center; */
@@ -217,6 +214,9 @@ $conn = null;
       /* -moz-box-sizing:    border-box; */
       /* -webkit-box-sizing: border-box; */
 
+    }
+    form{
+      width: 100%;
     }
     @media (max-width: 500px) {
       body{
@@ -266,7 +266,9 @@ $conn = null;
     </div>
     <div class="botonera" id="botonera">
       <!-- <button type="button" name="button" class="flechas" onclick="atras()"><span class="glyphicon glyphicon-chevron-left"></span></button> -->
-      <input type="date" name="" value="<?php echo $anio."-".$mes."-".$dia ?>" onchange="calendar()">
+      <form class="" method="post" id="fecha">
+        <input type="date" name="fecha" value="<?php echo $anio."-".$mes."-".$dia ?>" onchange="calendar()">
+      </form>
       <!-- <button type="button" name="button" class="flechas" onclick="adelante()"><span class="glyphicon glyphicon-chevron-right"></span></button> -->
     </div>
 
